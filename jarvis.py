@@ -1,54 +1,107 @@
-import pyttsx3
-import speech_recognition as sr
+import pyttsx3 #pip install pyttsx3
+import speech_recognition as sr #pip install speechRecognition
 import datetime
+import wikipedia #pip install wikipedia
+import webbrowser
+import os
+import smtplib
+import distutils
+
 
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
-print(voices[2].id)
+# print(voices[1].id)
 engine.setProperty('voice', voices[0].id)
+
 
 def speak(audio):
     engine.say(audio)
     engine.runAndWait()
 
-import datetime
 
 def wishMe():
-    hour = datetime.datetime.now().hour
-    if 0 <= hour < 12: 
+    hour = int(datetime.datetime.now().hour)
+    if hour>=0 and hour<12:
         speak("Good Morning!")
 
-    elif 12 <= hour < 18:
-        speak("Good Afternoon!")
+    elif hour>=12 and hour<18:
+        speak("Good Afternoon!")   
 
     else:
-        speak("Good Evening!")
+        speak("Good Evening!")  
 
-    speak("I am Jarvis Sir. Please tell me how may I help you")
+    speak("I am Jarvis Sir. Please tell me how may I help you")       
 
-
-def takeComand():
-    #it takes microphone input from the user and returns string outpult
+def takeCommand():
+    #It takes microphone input from the user and returns string output
 
     r = sr.Recognizer()
-    with sr.Microphone() as source :
+    with sr.Microphone() as source:
         print("Listening...")
         r.pause_threshold = 1
         audio = r.listen(source)
 
-        try: 
-            print('Recognizing...')
-            query = r.recognize_google(audio, Language='en-rs')
-            print(f"User said: {query}\n")
+    try:
+        print("Recognizing...")    
+        query = r.recognize_google(audio, language='en-in')
+        print(f"User said: {query}\n")
 
+    except Exception as e:
+        # print(e)    
+        print("Say that again please...")  
+        return "None"
+    return query
 
-        except Exception as e: 
-            # print(e)
+def sendEmail(to, content):
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.ehlo()
+    server.starttls()
+    server.login('test@example.com', 'your-password')
+    server.sendmail('test@example.com', to, content)
+    server.close()
 
-            print("Say that again please...")
-            return "None"
-        return query    
- 
 if __name__ == "__main__":
     wishMe()
-    takeComand()
+    while True:
+    # if 1:
+        query = takeCommand().lower()
+
+        # Logic for executing tasks based on query
+        if 'wikipedia' in query:
+            speak('Searching Wikipedia...')
+            query = query.replace("wikipedia", "")
+            results = wikipedia.summary(query, sentences=2)
+            speak("According to Wikipedia")
+            print(results)
+            speak(results)
+
+        elif 'open youtube' in query:
+            webbrowser.open("youtube.com")
+
+        elif 'open google' in query:
+            webbrowser.open("google.com")
+
+        elif 'open stackoverflow' in query:
+            webbrowser.open("stackoverflow.com")   
+
+
+       
+
+        elif 'the time' in query:
+            strTime = datetime.datetime.now().strftime("%H:%M:%S")    
+            speak(f"Sir, the time is {strTime}")
+
+        elif 'open code' in query:
+            codePath = "C:\\Users\\Haris\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"
+            os.startfile(codePath)
+
+        elif 'send email' in query:
+            try:
+                speak("What should I say?")
+                content = takeCommand()
+                to = "semsovicseid@gmail.com"    
+                sendEmail(to, content)
+                speak("Email has been sent!")
+            except Exception as e:
+                print(e)
+                speak("Sorry something is not okey")    
